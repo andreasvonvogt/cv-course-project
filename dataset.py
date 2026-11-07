@@ -18,7 +18,7 @@ class Dataset:
         self.filenames_val = filenames[:val_idx]
 
     def get_samples(name, size, width, height):
-        img = cv2.imread(os.path.join(Dataset.ROOT, size, name))
+        img = cv2.imread(os.path.join(Dataset.ROOT, size, name)).astype(np.float32) / 255
         return np.expand_dims(img[:height, :width], axis=0) # TODO get multiple samples if img is larger
 
     def test(self, batch_size):
