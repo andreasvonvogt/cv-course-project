@@ -61,8 +61,11 @@ class ModelBase(ABC):
                             validation_steps=ds.validation_size(),
                             callbacks=[checkpoint],
                             shuffle=False, verbose=2)
-        self.model = keras.models.load_model(f'{self.name}.keras')
+        self.load()
         return history
+
+    def load(self):
+        self.model = keras.models.load_model(f'{self.name}.keras')
 
     def predict(self, x, batch_size):
         return self.model.predict(x, batch_size=batch_size)
