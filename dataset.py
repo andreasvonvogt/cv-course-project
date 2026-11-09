@@ -3,22 +3,22 @@ import math
 import cv2
 import numpy as np
 from sklearn.utils import shuffle
+from dataset_location import DatasetLocation
 
 class Dataset:
-    ROOT = './dataset'
     VALIDATION_SPLIT = 0.1
     SAMPLE_WIDTH = 160
     SAMPLE_HEIGHT = 67
 
     def __init__(self):
-        path = os.path.join(Dataset.ROOT, '1')
+        path = os.path.join(DatasetLocation.ROOT, '1')
         filenames = shuffle(os.listdir(path))
         val_idx = math.floor(len(filenames) * Dataset.VALIDATION_SPLIT)
         self.filenames_test = filenames[val_idx:]
         self.filenames_val = filenames[:val_idx]
 
     def get_samples(name, size, width, height):
-        img = cv2.imread(os.path.join(Dataset.ROOT, size, name)).astype(np.float32) / 255
+        img = cv2.imread(os.path.join(DatasetLocation.ROOT, size, name)).astype(np.float32) / 255
         return np.expand_dims(img[:height, :width], axis=0) # TODO get multiple samples if img is larger
 
     def test(self, batch_size):
