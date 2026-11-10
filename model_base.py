@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataset import Dataset
+from dataset import Dataset, centered_sample
 import numpy as np
 import keras
 from keras import Model
@@ -25,6 +25,8 @@ def plot_history(history):
 
 def visualize_result(model, x, y):
     # visualize a single result of the model, comparing it with a reference image and with the result of cv2 resizing
+    x = centered_sample(x, Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT)
+    y = centered_sample(y, 2 * Dataset.SAMPLE_WIDTH, 2 * Dataset.SAMPLE_HEIGHT)
     res = model.predict(np.expand_dims(x, axis=0), batch_size=1)[0]
     plt.subplot(2, 2, 1), plt.imshow(cv2.cvtColor(x, cv2.COLOR_BGR2RGB)), plt.title('Source image')
     plt.subplot(2, 2, 2), plt.imshow(cv2.cvtColor(np.clip(cv2.resize(x, None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4), 0, 1), cv2.COLOR_BGR2RGB)), plt.title('Source image, resized')

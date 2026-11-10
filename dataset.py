@@ -5,10 +5,16 @@ import numpy as np
 from sklearn.utils import shuffle
 from dataset_location import DatasetLocation
 
+def centered_sample(img, width, height):
+    h, w, _ = img.shape
+    top = (h - height) // 2
+    left = (w - width) // 2
+    return img[top:top+height, left:left+width]
+
 class Dataset:
     VALIDATION_SPLIT = 0.1
-    SAMPLE_WIDTH = 160
-    SAMPLE_HEIGHT = 67
+    SAMPLE_WIDTH = 64
+    SAMPLE_HEIGHT = 64
 
     def __init__(self):
         path = os.path.join(DatasetLocation.ROOT, '1')
@@ -19,7 +25,7 @@ class Dataset:
 
     def get_samples(name, size, width, height):
         img = cv2.imread(os.path.join(DatasetLocation.ROOT, size, name)).astype(np.float32) / 255
-        return np.expand_dims(img[:height, :width], axis=0) # TODO get multiple samples if img is larger
+        return np.expand_dims(centered_sample(img, width, height), axis=0) # TODO get multiple samples if img is larger
 
     def test(self, batch_size):
         while True:
