@@ -31,6 +31,10 @@ def visualize_result(model, x, y):
     plt.subplot(2, 2, 3), plt.imshow(cv2.cvtColor(y, cv2.COLOR_BGR2RGB)), plt.title('Reference image')
     plt.subplot(2, 2, 4), plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB)), plt.title('Model result')
 
+@keras.saving.register_keras_serializable(package='super_resolution')
+def SSIMLoss(y_true, y_pred):
+  return 1 - keras.ops.mean(keras.ops.image.ssim(y_true, y_pred, 1.0))
+
 class ModelBase(ABC):
     def __init__(self, name, *, batch_size=64):
         self.name = name
@@ -49,11 +53,11 @@ class ModelBase(ABC):
     def fit(self):
         ds = Dataset()
 
-        epochs = 25
+        epochs = 50
         steps_per_epoch = ds.test_size() // self.batch_size
 
         checkpoint = keras.callbacks.ModelCheckpoint(f'{self.name}.keras', monitor='val_loss', save_best_only=True)
-        self.model.compile(optimizer="adam", loss="mse", metrics=["accuracy"])
+        self.model.compile(optimizer="adam", loss=SSIMLoss, metrics=["accuracy"])
         history = self.model.fit(ds.test(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
