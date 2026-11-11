@@ -1,0 +1,3 @@
+class DatasetLocation:
+    ROOT = './dataset'
+
