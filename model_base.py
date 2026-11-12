@@ -28,14 +28,19 @@ def visualize_result(model, x, y):
     x = centered_sample(x, Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT)
     y = centered_sample(y, 2 * Dataset.SAMPLE_WIDTH, 2 * Dataset.SAMPLE_HEIGHT)
     res = model.predict(np.expand_dims(x, axis=0), batch_size=1)[0]
+    cv_resized = np.clip(cv2.resize(x, None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4), 0, 1)
     plt.subplot(2, 3, 1), plt.imshow(cv2.cvtColor(x, cv2.COLOR_BGR2RGB)), plt.title('Source image')
-    plt.subplot(2, 3, 2), plt.imshow(cv2.cvtColor(np.clip(cv2.resize(x, None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4), 0, 1), cv2.COLOR_BGR2RGB)), plt.title('Source image, resized')
+    plt.subplot(2, 3, 2), plt.imshow(cv2.cvtColor(cv_resized, cv2.COLOR_BGR2RGB)), plt.title('Source image, resized')
     plt.subplot(2, 3, 4), plt.imshow(cv2.cvtColor(y, cv2.COLOR_BGR2RGB)), plt.title('Reference image')
     plt.subplot(2, 3, 5), plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB)), plt.title('Model result')
     # apply some color correction due to models with SSIM getting color wrong
     mean = np.mean(res-y, axis=(0,1))
     res[::] = np.clip(res[::] - mean, 0, 1)
     plt.subplot(2, 3, 6), plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB)), plt.title('Color corrected result')
+    # compare losses with the cv-resized version
+    print('SSIM loss: ', ssim_loss(y, res), ssim_loss(y, cv_resized))
+    print('SSIM/MSE loss: ', ssim_mse_loss(y, res), ssim_mse_loss(y, cv_resized))
+    print('MAE loss: ', keras.losses.MeanAbsoluteError()(y, res), keras.losses.MeanAbsoluteError()(y, cv_resized))
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 def ssim_loss(y_true, y_pred):
