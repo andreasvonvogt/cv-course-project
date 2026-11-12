@@ -21,7 +21,7 @@ class Dataset:
         data = pd.read_csv(os.path.join(DatasetLocation.ROOT, 'images.csv')).sample(frac=1)
         data['Samples'] = (data['Width'] // Dataset.SAMPLE_WIDTH) * (data['Height'] // Dataset.SAMPLE_HEIGHT)
         val_idx = math.floor(len(data) * Dataset.VALIDATION_SPLIT)
-        self.data_test = data[val_idx:]
+        self.data_train = data[val_idx:]
         self.data_val = data[:val_idx]
 
     def get_samples(image, size, width, height):
@@ -33,10 +33,10 @@ class Dataset:
                 samples = np.concatenate((samples, np.expand_dims(img[top:top+height, left:left+width], axis=0)), axis=0)
         return samples
 
-    def test(self, batch_size):
-        num_samples = self.test_size()
+    def training(self, batch_size):
+        num_samples = self.training_size()
         while True:
-            data = shuffle(self.data_test).sample(frac=1)
+            data = shuffle(self.data_train).sample(frac=1)
 
             i = 0
             x_batch = np.empty((0, Dataset.SAMPLE_HEIGHT, Dataset.SAMPLE_WIDTH, 3), np.float32)
@@ -53,8 +53,8 @@ class Dataset:
                 x_batch = x_batch[batch_size:]
                 y_batch = y_batch[batch_size:]
 
-    def test_size(self):
-        return np.sum(self.data_test.iloc[:]['Samples'])
+    def training_size(self):
+        return np.sum(self.data_train.iloc[:]['Samples'])
 
     def validation(self):
         # TODO switch to a sequence/dataset class

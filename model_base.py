@@ -67,11 +67,11 @@ class ModelBase(ABC):
     def fit(self, epochs=50):
         ds = Dataset()
 
-        steps_per_epoch = ds.test_size() // self.batch_size
+        steps_per_epoch = ds.training_size() // self.batch_size
 
         checkpoint = keras.callbacks.ModelCheckpoint(f'{self.name}.keras', monitor='val_loss', save_best_only=True)
         self.model.compile(optimizer="adam", loss=ssim_mse_loss, metrics=["accuracy"])
-        return self.model.fit(ds.test(self.batch_size),
+        return self.model.fit(ds.training(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
                             validation_data=ds.validation(),
