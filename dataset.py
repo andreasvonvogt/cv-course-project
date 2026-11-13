@@ -36,7 +36,7 @@ class Dataset:
     def training(self, batch_size):
         num_samples = self.training_size()
         while True:
-            data = shuffle(self.data_train).sample(frac=1)
+            data = shuffle(self.data_train)
 
             i = 0
             x_batch = np.empty((0, Dataset.SAMPLE_HEIGHT, Dataset.SAMPLE_WIDTH, 3), np.float32)
