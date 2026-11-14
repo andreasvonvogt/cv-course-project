@@ -33,12 +33,12 @@ class Conv2Dx2Block(keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return (*input_shape[:-1], self.filters)
 
-    def call(self, x):
+    def call(self, x, training=None):
         x = self.c1(x)
-        x = self.bn1(x)
+        x = self.bn1(x, training=training)
         x = self.relu1(x)
         x = self.c2(x)
-        x = self.bn2(x)
+        x = self.bn2(x, training=training)
         x = self.relu2(x)
         return x
 
@@ -66,8 +66,8 @@ class DownscaleBlock(keras.layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, x):
-        x = self.cx2(x)
+    def call(self, x, training=None):
+        x = self.cx2(x, training=training)
         p = self.pool(x)
         return x, p
 
@@ -107,13 +107,13 @@ class UpscaleBlock(keras.layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, x, skip=None):
+    def call(self, x, skip=None, training=None):
         x = self.ct(x)
-        x = self.bn(x)
+        x = self.bn(x, training=training)
         x = self.relu(x)
         if self.concat and skip is not None:
             x = self.cat([x, skip])
-        x = self.cx2(x)
+        x = self.cx2(x, training=training)
         return x
 
     def get_config(self):
