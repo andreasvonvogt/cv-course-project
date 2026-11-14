@@ -27,8 +27,8 @@ def visualize_result(model, x, y):
     # visualize a single result of the model, comparing it with a reference image and with the result of cv2 resizing
     x = centered_sample(x, Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT)
     y = centered_sample(y, 2 * Dataset.SAMPLE_WIDTH, 2 * Dataset.SAMPLE_HEIGHT)
-    res = model.predict(np.expand_dims(x, axis=0), batch_size=1)[0]
-    cv_resized = np.clip(cv2.resize(x, None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4), 0, 1)
+    res = np.clip(model.predict(np.expand_dims(x, axis=0), batch_size=1)[0], 0, 1)
+    cv_resized = np.clip(cv2.resize(x, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC), 0, 1)
     plt.subplot(2, 3, 1), plt.imshow(cv2.cvtColor(x, cv2.COLOR_BGR2RGB)), plt.title('Source image')
     plt.subplot(2, 3, 2), plt.imshow(cv2.cvtColor(cv_resized, cv2.COLOR_BGR2RGB)), plt.title('Source image, resized')
     plt.subplot(2, 3, 4), plt.imshow(cv2.cvtColor(y, cv2.COLOR_BGR2RGB)), plt.title('Reference image')
@@ -75,7 +75,7 @@ class ModelBase(ABC):
         steps_per_epoch = ds.training_size() // self.batch_size
 
         checkpoint = keras.callbacks.ModelCheckpoint(f'{self.name}.keras', monitor='val_loss', save_best_only=True)
-        self.model.compile(optimizer="adam", loss=ssim_mse_loss, metrics=["accuracy"])
+        self.model.compile(optimizer="adam", loss="mae", metrics=["accuracy"])
         return self.model.fit(ds.training(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
