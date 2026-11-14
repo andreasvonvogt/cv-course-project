@@ -71,13 +71,19 @@ class ModelBase(ABC):
         steps_per_epoch = ds.training_size() // self.batch_size
 
         checkpoint = keras.callbacks.ModelCheckpoint(f'{self.name}.keras', monitor='val_loss', save_best_only=True)
-        self.model.compile(optimizer="adam", loss="mae", metrics=["accuracy"])
+        reduce_lr = keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss",
+            factor=0.5,
+            patience=8,
+            min_lr=1e-5,
+        )
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.002), loss="mae", metrics=["accuracy"])
         return self.model.fit(ds.training(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
                             validation_data=ds.validation(),
                             validation_steps=ds.validation_size(),
-                            callbacks=[checkpoint],
+                            callbacks=[checkpoint, reduce_lr],
                             shuffle=False, verbose=2)
 
     def load(self):
