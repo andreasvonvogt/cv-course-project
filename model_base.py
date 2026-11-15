@@ -12,16 +12,12 @@ def plot_history(history):
     h = history.history
     epochs = range(len(h['loss']))
 
-    plt.subplot(121), plt.plot(epochs, h['loss'], '.-', epochs, h['val_loss'], '.-')
+    plt.plot(epochs, h['loss'], '.-', epochs, h['val_loss'], '.-')
     plt.grid(True), plt.xlabel('epochs'), plt.ylabel('loss')
     plt.legend(['Train', 'Validation'])
-    plt.subplot(122), plt.plot(epochs, h['accuracy'], '.-',
-                               epochs, h['val_accuracy'], '.-')
-    plt.grid(True), plt.xlabel('epochs'), plt.ylabel('Accuracy')
-    plt.legend(['Train', 'Validation'])
 
-    print('Train Acc     ', h['accuracy'][-1])
-    print('Validation Acc', h['val_accuracy'][-1])
+    print('Train loss     ', h['loss'][-1])
+    print('Validation loss', h['val_loss'][-1])
 
 def visualize_result(model, x, y):
     # visualize a single result of the model, comparing it with a reference image and with the result of cv2 resizing
@@ -77,7 +73,7 @@ class ModelBase(ABC):
             patience=8,
             min_lr=1e-5,
         )
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.002), loss="mae", metrics=["accuracy"])
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.002), loss="mae")
         return self.model.fit(ds.training(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
