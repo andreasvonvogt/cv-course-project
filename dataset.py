@@ -67,3 +67,12 @@ class Dataset:
 
     def validation_size(self):
         return np.sum(self.data_val.iloc[:]['Samples'])
+
+    # complete validation dataset returned as 1 batch
+    def validation_arrays(self):
+        x_batch = np.empty((0, Dataset.SAMPLE_HEIGHT, Dataset.SAMPLE_WIDTH, 3), np.float32)
+        y_batch = np.empty((0, 2 * Dataset.SAMPLE_HEIGHT, 2 * Dataset.SAMPLE_WIDTH, 3), np.float32)
+        for image in self.data_val.iloc:
+            x_batch = np.concatenate((x_batch, Dataset.get_samples(image, '1', Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT)), axis=0)
+            y_batch = np.concatenate((y_batch, Dataset.get_samples(image, '2', 2 * Dataset.SAMPLE_WIDTH, 2 * Dataset.SAMPLE_HEIGHT)), axis=0)
+        return x_batch, y_batch

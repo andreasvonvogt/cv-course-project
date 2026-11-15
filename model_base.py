@@ -82,6 +82,10 @@ class ModelBase(ABC):
                             callbacks=[checkpoint, reduce_lr],
                             shuffle=False, verbose=2)
 
+    def evaluate(self):
+        ds = Dataset()
+        return self.model.evaluate(*ds.validation_arrays(), verbose=0)
+
     def load(self):
         self.model = keras.models.load_model(f'{self.name}.keras')
 
