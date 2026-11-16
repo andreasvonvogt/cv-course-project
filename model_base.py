@@ -61,7 +61,7 @@ class ModelBase(ABC):
     def summary(self):
         self.model.summary()
 
-    def fit(self, epochs=50, learning_rate=0.002, gradient_accumulation_steps=4, pruning_callback=None):
+    def fit(self, epochs=50, learning_rate=0.0002, gradient_accumulation_steps=1, pruning_callback=None):
         ds = Dataset()
 
         steps_per_epoch = ds.training_size() // self.batch_size
