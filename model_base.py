@@ -61,7 +61,7 @@ class ModelBase(ABC):
     def summary(self):
         self.model.summary()
 
-    def fit(self, epochs=50):
+    def fit(self, epochs=50, learning_rate=0.002, gradient_accumulation_steps=4, pruning_callback=None):
         ds = Dataset()
 
         steps_per_epoch = ds.training_size() // self.batch_size
@@ -73,13 +73,22 @@ class ModelBase(ABC):
             patience=8,
             min_lr=1e-5,
         )
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.002), loss="mae")
+        # build the list of callbacks, add the pruning callback if provided
+        callbacks = [checkpoint, reduce_lr]
+        if pruning_callback is not None:
+            callbacks.append(pruning_callback)
+
+        # Adam doesn't accept 1, set to None instead to update on every step
+        if gradient_accumulation_steps == 1:
+            gradient_accumulation_steps = None
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate, gradient_accumulation_steps=gradient_accumulation_steps), loss="mae")
+
         return self.model.fit(ds.training(self.batch_size),
                             epochs=epochs,
                             steps_per_epoch=steps_per_epoch,
                             validation_data=ds.validation(),
                             validation_steps=ds.validation_size(),
-                            callbacks=[checkpoint, reduce_lr],
+                            callbacks=callbacks,
                             shuffle=False, verbose=2)
 
     def evaluate(self):
