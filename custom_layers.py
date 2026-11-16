@@ -3,6 +3,7 @@ from keras.layers import Activation, BatchNormalization, Conv2D, Conv2DTranspose
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 class Conv2Dx2Block(keras.layers.Layer):
+    """Two convolution blocks in a row, with batch normalization and ReLU activation."""
     def __init__(self, filters, kernel_size=3, **kwargs):
         super().__init__(**kwargs)
         self.filters = filters
@@ -52,6 +53,10 @@ class Conv2Dx2Block(keras.layers.Layer):
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 class DownscaleBlock(keras.layers.Layer):
+    """
+    Extracts features with 2 convolution blocks, downscales the result with max pooling,
+    returns the data before and after pooling.
+    """
     def __init__(self, filters, kernel_size=3, **kwargs):
         super().__init__(**kwargs)
         self.filters = filters
@@ -81,6 +86,11 @@ class DownscaleBlock(keras.layers.Layer):
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 class UpscaleBlock(keras.layers.Layer):
+    """
+    Upscales the input by 2 on both dimensions,
+    concatenates it with feature data received from a DownscaleBlock (skip connection),
+    runs convolution on the result.
+    """
     def __init__(self, filters, kernel_size=3, concat=False, **kwargs):
         super().__init__(**kwargs)
         self.filters = filters

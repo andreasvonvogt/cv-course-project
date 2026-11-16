@@ -9,6 +9,12 @@ from matplotlib import pyplot as plt
 plt.rcParams['figure.figsize'] = [21, 9]
 
 def plot_history(history):
+    """
+    Visualize graphs of training and validation loss.
+
+    Args:
+        history: Training history returned by model.fit()
+    """
     h = history.history
     epochs = range(len(h['loss']))
 
@@ -20,6 +26,14 @@ def plot_history(history):
     print('Validation loss', h['val_loss'][-1])
 
 def visualize_result(model, x, y):
+    """
+    Run a model prediction on one image and plot the results for comparison with baseline.
+
+    Args:
+        model (keras.Model) Trained model to inspect
+        x (numpy.ndarray) Source image. A centered sample (Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT) is taken from it.
+        y (numpy.ndarray) Reference image. A centered sample (2*Dataset.SAMPLE_WIDTH, 2*Dataset.SAMPLE_HEIGHT) is taken from it.
+    """
     # visualize a single result of the model, comparing it with a reference image and with the result of cv2 resizing
     x = centered_sample(x, Dataset.SAMPLE_WIDTH, Dataset.SAMPLE_HEIGHT)
     y = centered_sample(y, 2 * Dataset.SAMPLE_WIDTH, 2 * Dataset.SAMPLE_HEIGHT)
@@ -36,10 +50,12 @@ def visualize_result(model, x, y):
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 def ssim_loss(y_true, y_pred):
+    """SSIM loss function in range [0,1]."""
     return (1 - keras.ops.mean(keras.ops.image.ssim(y_true, y_pred, 1.0))) / 2
 
 @keras.saving.register_keras_serializable(package='super_resolution')
 def ssim_mse_loss(y_true, y_pred):
+    """Hybrid SSIM/MSE (weighted equally) loss function."""
     SSIM_WEIGHT = 0.5
     MSE_WEIGHT = 0.5
     ssim = ssim_loss(y_true, y_pred)
@@ -47,6 +63,7 @@ def ssim_mse_loss(y_true, y_pred):
     return ssim * SSIM_WEIGHT + mse * MSE_WEIGHT
 
 class ModelBase(ABC):
+    """Base class for all the models being tested."""
     def __init__(self, name, *, batch_size=64):
         self.name = name
         self.batch_size = batch_size
@@ -66,6 +83,7 @@ class ModelBase(ABC):
 
         steps_per_epoch = ds.training_size() // self.batch_size
 
+        # callbacks for saving the best model and reducing learning rate if a plateau has been reached
         checkpoint = keras.callbacks.ModelCheckpoint(f'{self.name}.keras', monitor='val_loss', save_best_only=True)
         reduce_lr = keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss",

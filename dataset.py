@@ -7,12 +7,14 @@ from sklearn.utils import shuffle
 from dataset_location import DatasetLocation
 
 def centered_sample(img, width, height):
+    """Extract a single sample from an image, centered on both dimensions."""
     h, w, _ = img.shape
     top = (h - height) // 2
     left = (w - width) // 2
     return img[top:top+height, left:left+width]
 
 class Dataset:
+    """Class encapsulating the training dataset."""
     VALIDATION_SPLIT = 0.1
     SAMPLE_WIDTH = 64
     SAMPLE_HEIGHT = 64
@@ -25,6 +27,19 @@ class Dataset:
         self.data_val = data[:val_idx]
 
     def get_samples(image, size, width, height):
+        """
+        Extract (probably multiple) samples from an image with a given name.
+        Samples start from the top left corner, as many are extracted as the image size permits.
+
+        Args:
+            image: CSV line describing an image from the dataset
+            size (string) Image size (one of '1', '2', '4', '8' or '16')
+            width (int) Sample width
+            height (int) Sample height
+
+        Returns:
+            (numpy.ndarray) 4D array of images with shape (index, rows, columns, channels)
+        """
         img = cv2.imread(os.path.join(DatasetLocation.ROOT, size, image['Name'])).astype(np.float32) / 255
         h, w, _ = img.shape
         samples = np.empty((0, height, width, 3), np.float32)
@@ -34,6 +49,7 @@ class Dataset:
         return samples
 
     def training(self, batch_size):
+        """Generator iterating over the training dataset and yielding batches of a given size."""
         num_samples = self.training_size()
         while True:
             data = shuffle(self.data_train)
@@ -57,6 +73,7 @@ class Dataset:
         return np.sum(self.data_train.iloc[:]['Samples'])
 
     def validation(self):
+        """Generator iterating over the validation dataset and yielding batches of a size 1."""
         # TODO switch to a sequence/dataset class
         while True:
             for image in self.data_val.iloc:
@@ -68,8 +85,8 @@ class Dataset:
     def validation_size(self):
         return np.sum(self.data_val.iloc[:]['Samples'])
 
-    # complete validation dataset returned as 1 batch
     def validation_arrays(self):
+        """Complete validation dataset returned as 1 batch."""
         x_batch = np.empty((0, Dataset.SAMPLE_HEIGHT, Dataset.SAMPLE_WIDTH, 3), np.float32)
         y_batch = np.empty((0, 2 * Dataset.SAMPLE_HEIGHT, 2 * Dataset.SAMPLE_WIDTH, 3), np.float32)
         for image in self.data_val.iloc:
